@@ -41,7 +41,7 @@ int main(int argc, const char * argv[]) {
     server_socket = socket(PF_INET, SOCK_STREAM, 0); // http://man7.org/linux/man-pages/man2/socket.2.html IPv4 인터넷 프로토콜
     
     // socket bind
-    if (bind(server_socket, (struct socketaddr *)&server_address , sizeof(server_address)) < 0) {
+    if (bind(server_socket, (const struct sockaddr *)&server_address , sizeof(server_address)) < 0) {
         // return -1
         error_handle("bind() Error\n");
     }
