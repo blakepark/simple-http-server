@@ -24,17 +24,17 @@ void error_handle(char* msg){
 
 int main(int argc, const char * argv[]) {
     
-    //선언
+    // declare valiables.
     struct sockaddr_in server_address, client_address;
     int server_socket, client_socket;
     int port = 8000;
     FILE *request;
     
-    // stack에 server구조체 선언 및 초기화
-    memset(&server_address, 0, sizeof(server_address)); //2번 파라미터는 초기화할 값
-    
-    // 서버 구조체 값 설정
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY);  // 32bit long intger를 네트워크 byte order로 변경한다.
+    // init server struct in stack.
+    memset(&server_address, 0, sizeof(server_address));
+
+    // set server struct value .
+    server_address.sin_addr.s_addr = htonl(INADDR_ANY); // change 32bit long intger to network byte order (big endian)
     server_address.sin_family = AF_INET; // address 패밀리 IPv4
     server_address.sin_port = htons(port); //integer를 네트워크 byte order로 변경
     
@@ -78,9 +78,8 @@ int main(int argc, const char * argv[]) {
             }
             
 
-            char response_buffer[81];
-            strcpy(response_buffer,"HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body>Hello world!</body></html>\r");
-            
+            char response_buffer[BUFFER_SIZE];
+	    strcpy(response_buffer,"HTTP/1.1 200 OK\nContent-Length: 40\nContent-Type: text/html\n\n<html><body>Hello world!</body></html>\r\n");
             printf("\n==================== response\n%s", response_buffer);
             send(client_socket,&response_buffer,sizeof(response_buffer),0);
             
