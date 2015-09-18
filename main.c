@@ -78,7 +78,7 @@ int main(int argc, const char * argv[]) {
             }
             
 
-            char response_buffer[80];
+            char response_buffer[81];
             strcpy(response_buffer,"HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body>Hello world!</body></html>\r");
             
             printf("\n==================== response\n%s", response_buffer);
