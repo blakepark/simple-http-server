@@ -15,7 +15,7 @@
 #include <string.h>
 
 #define	BACKLOG_SIZE	20
-#define BUFFER_SIZE     2048
+#define BUFFER_SIZE     1024
 
 void error_handle(char* msg){
     printf("%s",msg);
@@ -33,54 +33,61 @@ int main(int argc, const char * argv[]) {
     // init server struct in stack.
     memset(&server_address, 0, sizeof(server_address));
 
-    // set server struct value .
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY); // change 32bit long intger to network byte order (big endian)
-    server_address.sin_family = AF_INET; // address 패밀리 IPv4
-    server_address.sin_port = htons(port); //integer를 네트워크 byte order로 변경
+    // set server struct value (http://man7.org/linux/man-pages/man2/socket.2.html)
+    server_address.sin_addr.s_addr = htonl(INADDR_ANY);     // change 32bit long intger to network byte order (big endian)
+    server_address.sin_family = AF_INET;                    // set address family IPv4
+    server_address.sin_port = htons(port);                  // change network byte order
 
-    server_socket = socket(PF_INET, SOCK_STREAM, 0); // http://man7.org/linux/man-pages/man2/socket.2.html IPv4 인터넷 프로토콜
+    // create socket to IPv4 internet protocol
+    server_socket = socket(PF_INET, SOCK_STREAM, 0);
 
-    // socket bind
-    if (bind(server_socket, (const struct sockaddr *)&server_address , sizeof(server_address)) < 0) {
-        // return -1
-        error_handle("bind() Error\n");
-    }
+    // socket bind (error : return -1)
+    if (bind(server_socket, (const struct sockaddr *)&server_address , sizeof(server_address)) < 0) error_handle("bind() Error\n");
 
-    // 계속 listen한다.
     while (1) {
-
         // listen
         if (listen(server_socket, BACKLOG_SIZE) != 1 ) {
             uint client_address_size = sizeof(client_address);
 
             // accept
             client_socket = accept(server_socket, (struct sockaddr*)&client_address,&client_address_size);
-            if (client_socket < 0) {
-                // -1 error
-                error_handle("accept() failed\n");
-            }
+            if (client_socket < 0) error_handle("accept() failed\n");
 
-            // request를 읽어온다.
+            // read client request
             request = fdopen(client_socket, "r");
 
-            char buffer[BUFFER_SIZE];
+            // malloc request_buffer
+            char* request_buffer = malloc(BUFFER_SIZE);
+            int request_buffer_size = BUFFER_SIZE;
 
-            //request 출력
+            // get request
             while (1) {
-                printf("==================== request\n");
-                ssize_t recv_size = recv(client_socket, buffer, BUFFER_SIZE, 0);
-                printf("%s", buffer);
+                char request_inner_buffer[BUFFER_SIZE] = {0};
+                ssize_t recv_size = recv(client_socket, request_inner_buffer, BUFFER_SIZE, 0);
 
-                if(recv_size < 0 || recv_size < BUFFER_SIZE){
-                    // 가지고 올게 없으면
-                    break;
-                }
+                // EOF
+                if(recv_size == -1) break;
+
+                // realloc request_buffer_size
+                request_buffer_size = request_buffer_size + (int)recv_size;
+                request_buffer = realloc(request_buffer, request_buffer_size);
+
+                // concatenate request
+                strcat(request_buffer, request_inner_buffer);
+
+                // EOF
+                if(recv_size < BUFFER_SIZE) break;
             }
 
-            char response_buffer[BUFFER_SIZE];
-            strcpy(response_buffer,"HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body>Hello world!</body></html>\r\n\r\n");
+
+            char response_buffer[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body>Hello world!</body></html>";
             send(client_socket,&response_buffer,strlen(response_buffer),0);
-            printf("\n==================== response\n%s", response_buffer);
+            printf("\n==================== response\n%s\n", response_buffer);
+            printf("\n");
+            printf("\n==================== return_buffer (now_buffer_size : %d)\n%s", request_buffer_size, request_buffer);
+
+            // close
+            free(request_buffer);
             fclose(request);
             close(client_socket);
         }
