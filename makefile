@@ -1,2 +1,2 @@
 main: main.c
-	gcc main.c -o simple-http-server
+	gcc main.c -o simple-http-server -lpthread
