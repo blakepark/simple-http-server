@@ -73,9 +73,9 @@ void *request_routine_cli_sock(void *cli_sock){
   int request_buffer_size;
 
   client_socket = *((int *) cli_sock);              // read client socket
-
   request = fdopen(client_socket, "r");             // read client request
-  request_buffer = malloc(BUFFER_SIZE);             // init request_buffer
+  request_buffer = malloc(BUFFER_SIZE);             // init request_buffer in heap
+  if (request_buffer == NULL) error_handle("malloc() NULL");
   request_buffer_size = BUFFER_SIZE;
 
   // get request
@@ -89,6 +89,7 @@ void *request_routine_cli_sock(void *cli_sock){
     // realloc request_buffer_size
     request_buffer_size = request_buffer_size + (int)recv_size;
     request_buffer = realloc(request_buffer, request_buffer_size);
+    if (request_buffer == NULL) error_handle("realloc() NULL");
 
     // concatenate request
     strcat(request_buffer, request_inner_buffer);
@@ -108,7 +109,7 @@ void *request_routine_cli_sock(void *cli_sock){
   fclose(request);
 
 //    sleep(10);  // release test
-  return 0;
+  return cli_sock;
 }
 
 
