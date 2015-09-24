@@ -16,12 +16,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include "error.h"
 
 #define BACKLOG_SIZE  2
 #define BUFFER_SIZE   1024
 #define WORKER_SIZE   20
 
-void error_handle(char *msg);
+
 void *request_routine_cli_sock(void *cli_sock);
 
 
@@ -65,14 +66,14 @@ int main(int argc, const char * argv[]) {
 
 
 void *request_routine_cli_sock(void *cli_sock){
-
+  //(void *) cli_sock = 0x00007fff5fbff728
 //    printf("================= created thread ===============\n");
   FILE *request;
   int client_socket;
   char *request_buffer;
   int request_buffer_size;
 
-  client_socket = *((int *) cli_sock);              // read client socket
+  client_socket = *((int *) cli_sock);              // read client socket (int *) cli_sock -> pointer address,  *(pointer address) -> value of pointer
   request = fdopen(client_socket, "r");             // read client request
   request_buffer = malloc(BUFFER_SIZE);             // init request_buffer in heap
   if (request_buffer == NULL) error_handle("malloc() NULL");
@@ -215,8 +216,3 @@ void *request_routine_cli_sock(void *cli_sock){
 //  close(client_socket);
 //  return 0;
 //}
-
-void error_handle(char *msg){
-  printf("%s",msg);
-  exit(1);
-}
