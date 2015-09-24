@@ -5,8 +5,8 @@ BIN		= simple-http-server
 CC      	= /usr/bin/gcc
 CFLAGS		= -lpthread -I $(INCLUDE_PATH)
 
-simple-http-server: main.c $(SOURCE_PATH)/error.c
-	$(CC) -o $(BIN) main.c $(SOURCE_PATH)/error.c $(CFLAGS)
+simple-http-server: $(SOURCE_PATH)/main.c $(SOURCE_PATH)/error.c $(SOURCE_PATH)/server.c
+	$(CC) -o $(BIN) $(SOURCE_PATH)/main.c $(SOURCE_PATH)/server.c $(SOURCE_PATH)/error.c $(CFLAGS)
 
 clean:
 	rm ./simple-http-server
